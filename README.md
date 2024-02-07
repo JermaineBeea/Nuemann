@@ -1,2 +1,2 @@
 # Nuemann
-This repository has Forecast function code
+This repository has py Functions that generate froecast
