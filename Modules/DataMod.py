@@ -104,7 +104,7 @@ def probDistr(distr_range, original_data, return_type = (1,2,3,4,5), decimal_con
     RelativeProb = np.zeros_like(CounterArr)  
   return [(CounterArr, SumCount, ProbArr, RelativeProb, NetProb)[digit - 1] for digit in return_type]
 
-# Function to calculate probability distribution of data in a faster way
+# Function to calculate probability distribution of data in a faster way. less memory efficient
 def blitzProbDistr(distr_range, original_data, return_type = (1,2,3,4,5), decimal_convert = True, roundup = None):
   # Set default value for roundup if not provided
   if roundup is None: roundup = 2 if decimal_convert else 0
