@@ -30,7 +30,7 @@ user_input = None; close_match = None; break_flag = 'main menu';exit_flag = 'exi
 # Main loop
 while (user_input != exit_flag):
   valid_inputs = 'view','create','modify'
-  message = f'{'Welcome to the Directory creator' if not user_input else ''} \nDo you wish to {list(valid_inputs)} directory?' 
+  message = f"{'Welcome to the Directory creator' if not user_input else ''} \nDo you wish to {list(valid_inputs)} directory?"  
   message += f'\nType {list(valid_inputs)} or "{exit_flag}" to cancel:\nEnter input: '
 
   # Get user input
