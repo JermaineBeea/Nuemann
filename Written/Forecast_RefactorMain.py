@@ -10,10 +10,9 @@ data = pd.read_csv(path, sep = '\t')['<CLOSE>'].dropna()
 initial_val = data.iloc[-1] if isinstance(data, pd.Series) else data[-1]
 print(f'Initial value: {initial_val}')
 
-split_data = True
-bounding = False
-if bounding:
-  recursive_bounding = False
+region_split = True
+bound_split = False
+recursive_split = False
 
 def method_called (arg, method_used = DataMod.method_1, **kwargs):
   key_args = {
@@ -44,22 +43,22 @@ for index1 in np.arange(num_forecasts):
     elif current_val < data.min(): 
       current_data = DataMod.boundData(data, data.min(), region_size)
       method_result = method_called(current_data)
-    elif bounding and index2 == 1:
+    elif bound_split and index2 == 1:
       current_data = DataMod.boundData(data, current_val,region_size)
       method_result = method_called(current_data)
-    elif bounding and recursive_bounding:
+    elif bound_split and recursive_split:
         if not (current_val>= current_data.min() and current_val <= current_data.max()):
           current_data = DataMod.boundData(data, current_val,region_size)
           method_result = method_called(current_data)
    
-    elif split_data and index2 == 1:
+    elif region_split and index2 == 1:
       data_regions, region_values = DataMod.splitData(data, current_val, region_size)
       region_index = np.digitize(current_val, region_values)
       if region_index == len(region_values): region_index -= 1
       if region_index == 0: region_index += 1
       net_process = [method_called(region) for region in data_regions]
       method_result = net_process[region_index - 1]
-    elif split_data:
+    elif region_split and recursive_split:
       current_regionIndex = np.digitize(current_val, region_values)
       if current_regionIndex == len(region_values): current_regionIndex -= 1
       if current_regionIndex == 0: current_regionIndex += 1
