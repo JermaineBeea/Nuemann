@@ -12,7 +12,7 @@ print(f'Initial value: {initial_val}')
 
 region_split = True
 bound_split = False
-recursive_split = False
+recursive_split = True
 
 def method_called (arg, method_used = DataMod.method_1, **kwargs):
   key_args = {
@@ -26,8 +26,8 @@ def method_called (arg, method_used = DataMod.method_1, **kwargs):
   return method_used(arg, **key_args)
 
 region_size = (1/3)*np.ptp(data)
-num_forecasts = 1000
-Forecast_iterations = 1000
+num_forecasts = 10
+Forecast_iterations = 10
 Forecast = np.zeros((num_forecasts, Forecast_iterations))
 
 for index1 in np.arange(num_forecasts):
@@ -72,7 +72,8 @@ for index1 in np.arange(num_forecasts):
 
     current_val += DataMod.genChange(method_result)
     Forecast[index1, index2] = current_val
-    
-plt.plot(Forecast.T)
+
+frame = pd.DataFrame(Forecast)
+plt.plot(Forecast.T, color = 'grey')
 plt.show()
 

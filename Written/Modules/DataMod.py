@@ -3,8 +3,12 @@ import cProfile
 import pandas as pd
 import random
 
-def distribution(data, dev_type = 1,  tend_evaluation = True, return_type = 'conc distr'):
+def DistrFunc(data, **kwargs):
   
+  dev_type = kwargs.get('dev_type', 1)
+  tend_evaluation = kwargs.get('tend_evaluation', True)
+  return_type = kwargs.get('return_type', 'conc distr')
+
   if tend_evaluation:
     deviation = np.power(np.mean(np.abs(data[:, None] - data) ** dev_type, axis=1), 1/dev_type).min()
     min_indices = np.where(np.isclose(np.power(np.mean(np.abs(data[:, None] - data) ** dev_type, axis=1), 1/dev_type), deviation))
@@ -33,8 +37,11 @@ def distribution(data, dev_type = 1,  tend_evaluation = True, return_type = 'con
   else: 
     return [return_libr[key] for key in [return_type]][0]
 
-def blitzDistr(data, dev_type = 1 , tend_evaluation = True, return_type = 'conc distr'):
-  
+def blitzDistr(data, **kwargs):
+  dev_type = kwargs.get('dev_type', 1)
+  tend_evaluation = kwargs.get('tend_evaluation', True)
+  return_type = kwargs.get('return_type', 'conc distr')
+
   if isinstance(data, list): data = np.array(data)
   if data.size == 0: 
     if isinstance(return_type, tuple):return [None for _ in return_type]
@@ -74,20 +81,25 @@ def blitzDistr(data, dev_type = 1 , tend_evaluation = True, return_type = 'conc 
   'conc tend': concatenated_distribution[1],
   'distr range': distr_range,
   'conc range': conc_range
-}
+  }
+  
   if isinstance(return_type, tuple): 
     return [return_libr[key] for key in return_type]
   else: 
     return [return_libr[key] for key in [return_type]][0]
 
-def region_MapPair(original_data, region_values, pair_data = False, pair_increment = 1, return_type = 1):
+def region_MapPair(original_data, region_values, **kwargs):
+
+  pair_data = kwargs.get('pair_data', False)
+  pair_increment = kwargs.get('pair_increment', 1) if pair_data else 0
+  return_type = kwargs.get('return_type', 1)
 
   if isinstance(region_values, list): original_data = np.array(original_data)
   n = len(region_values) - 1
   mapped_data = [[] for _ in range(n)]
 
   filtered_data = original_data[(original_data >= min(region_values)) & (original_data <= max(region_values))]
-  if not pair_data: pair_increment = 0
+
   for val, nextval in zip(filtered_data, filtered_data[pair_increment:]):    
     bin_value = np.digitize(val, region_values)
     if bin_value > n: bin_value = n
@@ -140,7 +152,12 @@ def filterPair(data, **kwargs):
 
   return print('No filter or pair operation performed') 
 
-def diffFunction(data, n_order = 1, axis = 1, return_type = (0, 1, 2, 'pos prob', 'neg prob')):
+def diffFunction(data, **kwargs):
+  
+  n_order = kwargs.get('n_order', 1)
+  axis = kwargs.get('axis', 1)
+  return_type = kwargs.get('return_type', 0)
+  
   data_shape = np.shape(data)
   if len(data) == 0: return print('Data is empty')
   elif len(data_shape) == 1: 
@@ -184,13 +201,13 @@ def method_1 (data, **kwargs):
   tend_evaluation = kwargs.get('tend_evaluation', True)
 
   differences = diffFunction(data, return_type = 0)
-  diff_distr = blitzDistr(differences, dev_type, tend_evaluation,  return_type = 'conc distr')
+  diff_distr = blitzDistr(differences, dev_type = dev_type, tend_evaluation = tend_evaluation,  return_type = 'conc distr')
   region_mapped, probability = region_MapPair(differences , diff_distr, return_type = (1,2))
   lower_region = region_mapped[0]
   upper_region = region_mapped[-1]
   prob_upperRegion = probability[-1] if use_prob else set_prob
-  distr_lowerRegion, tend_lowerRegion = blitzDistr(lower_region, dev_type, tend_evaluation, return_type = ('conc range', 'conc tend'))
-  distr_upperRegion, tend_upperRegion = blitzDistr(upper_region, dev_type, tend_evaluation, return_type = ('conc range', 'conc tend'))
+  distr_lowerRegion, tend_lowerRegion = blitzDistr(lower_region, dev_type = dev_type, tend_evaluation = tend_evaluation, return_type = ('conc range', 'conc tend'))
+  distr_upperRegion, tend_upperRegion = blitzDistr(upper_region, dev_type = dev_type, tend_evaluation = tend_evaluation, return_type = ('conc range', 'conc tend'))
   
   if dynamic_change:
     return distr_lowerRegion, distr_upperRegion, prob_upperRegion
@@ -205,8 +222,8 @@ def method_2 (data, **kwargs):
   tend_evaluation = kwargs.get('tend_evaluation', True)
 
   pos_val, neg_val, prob_pos = diffFunction(data, return_type = (1, 2, 'pos prob'))
-  distr_pos, tend_pos = blitzDistr(pos_val, dev_type, tend_evaluation, return_type = ('conc range', 'conc tend'))
-  distr_neg, tend_neg = blitzDistr(neg_val, dev_type, tend_evaluation, return_type = ('conc range', 'conc tend'))
+  distr_pos, tend_pos = blitzDistr(pos_val, dev_type = dev_type, tend_evaluation = tend_evaluation, return_type = ('conc range', 'conc tend'))
+  distr_neg, tend_neg = blitzDistr(neg_val, dev_type = dev_type, tend_evaluation = tend_evaluation, return_type = ('conc range', 'conc tend'))
   prob_pos = prob_pos if use_prob else set_prob
 
   if dynamic_change:
