@@ -97,16 +97,12 @@ def region_MapPair(original_data, region_values, pair_data = False, pair_increme
   
   Data_size = original_data.size
   net_MapData_size = len(mapped_data[0]) if len(mapped_data) == 1 else len(np.concatenate(mapped_data))
+  mappedData_size = [len(sub_data) for sub_data in mapped_data]
   Total_prob = net_MapData_size / Data_size
   abs_prob = [len(sub_data) / Data_size for sub_data in mapped_data]
   relative_prob = [len(sub_data) / net_MapData_size for sub_data in mapped_data]
   
-  # if len(mapped_data) == 1: 
-  #   mapped_data = mapped_data[0]
-  #   relative_prob = relative_prob[0]
-  #   abs_prob = abs_prob[0]
-
-  return_list = [mapped_data, relative_prob, abs_prob, Total_prob]
+  return_list = [mapped_data, net_MapData_size, mappedData_size, relative_prob, abs_prob, Total_prob]
 
   if  isinstance(return_type,tuple): 
     return [return_list[digit - 1] for digit in return_type]
