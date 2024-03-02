@@ -37,38 +37,34 @@ for index1 in np.arange(num_forecasts):
       Forecast[index1, index2] = current_val
       continue
     
-    if current_val > data.max(): 
-      current_data = DataMod.boundData(data, data.max(), region_size)
-      method_result = method_called(current_data)
-    elif current_val < data.min(): 
-      current_data = DataMod.boundData(data, data.min(), region_size)
-      method_result = method_called(current_data)
-    elif bound_split and index2 == 1:
-      current_data = DataMod.boundData(data, current_val,region_size)
-      method_result = method_called(current_data)
-    elif bound_split and recursive_split:
-        if not (current_val>= current_data.min() and current_val <= current_data.max()):
+    if bound_split:
+      if current_val < data.min() or current_val > current_data.max():      
+        current_val = data.max() if current_val > data.max() else data.min() 
+        current_data = DataMod.boundData(data, current_val, region_size)
+      elif index2 == 1:
+        current_data = DataMod.boundData(data, current_val,region_size)
+      elif recursive_split:
+        if current_val < current_data.min() or current_val > current_data.max():
           current_data = DataMod.boundData(data, current_val,region_size)
-          method_result = method_called(current_data)
-   
-    elif region_split and index2 == 1:
-      data_regions, region_values = DataMod.splitData(data, current_val, region_size)
-      region_index = np.digitize(current_val, region_values)
-      if region_index == len(region_values): region_index -= 1
-      if region_index == 0: region_index += 1
-      net_process = [method_called(region) for region in data_regions]
+      method_result = method_called(current_data)
+
+    if region_split:
+      if index2 == 1:
+        data_regions, region_values = DataMod.splitData(data, current_val, region_size)
+        net_process = [method_called(data_regions[i]) for i in range(len(data_regions))]
+        region_index = np.digitize(current_val, region_values)
+        if region_index == len(region_values): region_index -= 1
+        if region_index == 0: region_index += 1
+      elif recursive_split:
+        current_regionIndex = np.digitize(current_val, region_values)
+        if current_regionIndex != region_index:
+          if current_regionIndex == len(region_values): current_regionIndex -= 1
+          if current_regionIndex == 0: current_regionIndex += 1
+          region_index = current_regionIndex
       method_result = net_process[region_index - 1]
-    elif region_split and recursive_split:
-      current_regionIndex = np.digitize(current_val, region_values)
-      if current_regionIndex == len(region_values): current_regionIndex -= 1
-      if current_regionIndex == 0: current_regionIndex += 1
-      if current_regionIndex != region_index:
-        region_index = current_regionIndex
-        method_result = net_process[region_index - 1]
 
     elif index2 == 1:
-      current_data = data
-      method_result = method_called(current_data)  
+      method_result = method_called(data)  
 
     current_val += DataMod.genChange(method_result)
     Forecast[index1, index2] = current_val
