@@ -101,11 +101,6 @@ def region_MapPair(original_data, region_values, pair_data = False, pair_increme
   abs_prob = [len(sub_data) / Data_size for sub_data in mapped_data]
   relative_prob = [len(sub_data) / net_MapData_size for sub_data in mapped_data]
   
-  # if len(mapped_data) == 1: 
-  #   mapped_data = mapped_data[0]
-  #   relative_prob = relative_prob[0]
-  #   abs_prob = abs_prob[0]
-
   return_list = [mapped_data, relative_prob, abs_prob, Total_prob]
 
   if  isinstance(return_type,tuple): 
@@ -164,6 +159,23 @@ def diffFunction(data, n_order = 1, axis = 1, return_type = (0, 1, 2, 'pos prob'
   else: 
     return [return_libr[key] for key in [return_type]][0]
 
+def boundData (data, value, region_size):
+  if isinstance(data, list): data = np.array(data)
+  upper_bound = value + (abs(data.max() - value)/np.ptp(data))*region_size
+  lower_bound = value - (abs(data.min() - value)/np.ptp(data))*region_size
+  current_data = data[(data >= lower_bound) & (data <= upper_bound)]
+  return current_data
+
+def splitData (data, val, region_size):
+  if isinstance(data, list): data = np.array(data)
+  steps = np.floor(np.ptp(data)/region_size) + 1
+  region_values = np.linspace(data.min(), data.max(), int(steps))
+  split_data = region_MapPair(data, region_values, pair_data =  True)
+  region_index = np.digitize(val, region_values)
+  if region_index == len(region_values): region_index -= 1
+  if region_index == 0: region_index += 1
+  return split_data, region_values
+
 def method_1 (data, **kwargs):
   dynamic_change = kwargs.get('dynamic_change', True)
   use_prob = kwargs.get('use_prob', True)
@@ -206,23 +218,6 @@ def genChange(method_data):
   lower_change = method_data[0] if len(method_data[0]) == 1 else random.uniform(*method_data[0])
   upper_change = method_data[1] if len(method_data[1]) == 1 else random.uniform(*method_data[1])
   return upper_change if random.random() > method_data[2] else lower_change
-
-def boundData (data, value, region_size):
-  if isinstance(data, list): data = np.array(data)
-  upper_bound = value + (abs(data.max() - value)/np.ptp(data))*region_size
-  lower_bound = value - (abs(data.min() - value)/np.ptp(data))*region_size
-  current_data = data[(data >= lower_bound) & (data <= upper_bound)]
-  return current_data
-
-def splitData (data, val, region_size):
-  if isinstance(data, list): data = np.array(data)
-  steps = np.floor(np.ptp(data)/region_size) + 1
-  region_values = np.linspace(data.min(), data.max(), int(steps))
-  split_data = region_MapPair(data, region_values, pair_data =  True)
-  region_index = np.digitize(val, region_values)
-  if region_index == len(region_values): region_index -= 1
-  if region_index == 0: region_index += 1
-  return split_data, region_values
 
 if __name__== '__main__':
   path = r'EURAUD.ifx_M1_202402190000_202402191016.csv'
