@@ -86,11 +86,18 @@ def blitzDistr (data, **kwargs):
   else: 
     return [return_libr[key] for key in [return_type]][0]
 
-def regionMap_pair (original_data, region_values, **kwargs):
-
+def regionMap_pair (original_data, region_values = None, **kwargs):
+  if isinstance(original_data, list): original_data = np.array(original_data)
   pair_data = kwargs.get('pair_data', False)
   pair_increment = kwargs.get('pair_increment', 1) if pair_data else 0
   return_type = kwargs.get('return_type', 1)
+
+  if isinstance(region_values, str):
+    if region_values.lower() == 'map distr': 
+      kwargs_copy = kwargs.copy()
+      kwargs_copy.pop('return_type', None)
+      distr_return = kwargs_copy.get('distr_return', 'conc distr')
+      region_values = blitzDistr(original_data, return_type = distr_return, **kwargs_copy)
 
   if isinstance(region_values, list): original_data = np.array(original_data)
   n = len(region_values) - 1
@@ -107,11 +114,12 @@ def regionMap_pair (original_data, region_values, **kwargs):
   
   Data_size = original_data.size
   net_MapData_size = len(mapped_data[0]) if len(mapped_data) == 1 else len(np.concatenate(mapped_data))
+  mappedData_size = [len(sub_data) for sub_data in mapped_data]
   Total_prob = net_MapData_size / Data_size
   abs_prob = [len(sub_data) / Data_size for sub_data in mapped_data]
   relative_prob = [len(sub_data) / net_MapData_size for sub_data in mapped_data]
   
-  return_list = [mapped_data, relative_prob, abs_prob, Total_prob]
+  return_list = [mapped_data, relative_prob, abs_prob, Total_prob, net_MapData_size, mappedData_size, region_values]
 
   if  isinstance(return_type,tuple): 
     return [return_list[digit - 1] for digit in return_type]
@@ -236,9 +244,17 @@ def genChange (method_data):
   return upper_change if random.random() > method_data[2] else lower_change
 
 if __name__== '__main__':
-  path = r'EURAUD.ifx_M1_202402190000_202402191016.csv'
+  path = r'/workspaces/Nuemann/Written/EURAUD.ifx_M1_202402190000_202402191016.csv'
   data = pd.read_csv(path, sep = '\t')['<CLOSE>'].dropna()
 
+  data = np.arange(21).reshape(7,3)
+  data_frame = pd.DataFrame(data)
+  # result1, result2 = regionMap_pair(data, region_values = [0, 5, 10, 20], return_type = (1,2))
+  # print(f'result1: {result1} and result2: {result2} \n')
+  moving_distr, count = data_frame.apply(regionMap_pair, axis = 0, dev_type = 2, region_values = 'map distr', return_type = (1,5)).to_numpy()
+  print(f'moving_distr: {moving_distr} and count: {count} \n')
+  # mapped_data = regionMap_pair(data, region_values = 'map distr', return_type = (5,6,7))
+  # print(f'mapped_data: {mapped_data} \n')
   
 
   
