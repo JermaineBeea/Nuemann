@@ -4,7 +4,7 @@ import cProfile
 from Modules import DataMod
 import matplotlib.pyplot as plt
 
-class Main():
+class ForecastClass():
   def __init__(self, data, initial_val):
     self.data = data
     self.initial_val = initial_val
@@ -26,22 +26,22 @@ class Main():
     return self.method_used(arg, **key_args)  
   
   def bound_split (self, region_size, recursive_split = True):
+    self.bound_split_called = True
     data = self.data
     initial_val = self.initial_val
     self.region_size = region_size
     self.recursive_split = recursive_split
-    self.bound_split_called = True
     if initial_val < data.min() or initial_val > data.max():      
       initial_val = data.max() if initial_val > data.max() else data.min() 
-    current_data = DataMod.boundData(data, initial_val, region_size)
-    self.method_return = self.method_called(current_data)  
+    self.current_data = DataMod.boundData(data, initial_val, region_size)
+    self.method_return = self.method_called(self.current_data)  
 
   def region_split (self, region_size, recursive_split = True):
+    self.region_split_called = True
     data = self.data
-    initial_val = self.inital_val
+    initial_val = self.initial_val
     self.region_size = region_size
     self.recursive_split = recursive_split
-    self.region_split_called = True
     data_regions, region_values = DataMod.splitData(data, initial_val, region_size)
     self.region_values = region_values
     self.net_process = [self.method_called(data_regions[i]) for i in range(len(data_regions))]
@@ -52,29 +52,31 @@ class Main():
     self.method_return = self.net_process[region_index - 1]
   
   def generateChange (self, current_val):
-    data = self.data
     if self.bound_split_called and self.recursive_split:
+      data = self.data
+      current_data = self.current_data
       region_size = self.region_size
       if current_val < data.min() or current_val > data.max():      
         current_val = data.max() if current_val > data.max() else data.min() 
         current_data = DataMod.boundData(data, current_val, region_size)
       elif current_val < current_data.min() or current_val > current_data.max():
         current_data = DataMod.boundData(data, current_val,region_size)
-      self.method_return = self.method_called(current_data)
+        self.current_data = current_data
+      self.method_return = self.method_called(self.current_data)
     
     elif self.region_split_called and self.recursive_split:
       region_values = self.region_values
       region_index = self.region_index
       current_regionIndex = np.digitize(current_val, region_values)
-      if current_regionIndex == len(region_values): current_regionIndex -= 1
-      if current_regionIndex == 0: current_regionIndex += 1
       if current_regionIndex != region_index:
+        if current_regionIndex == len(region_values): current_regionIndex -= 1
+        if current_regionIndex == 0: current_regionIndex += 1
         self.region_index = current_regionIndex
-      self.method_return = self.net_process[region_index - 1]
+      self.method_return = self.net_process[self.region_index - 1]
+    
     else:
-      self.method_return = self.method_used(data)
+      self.method_return = self.method_called(self.data)
     change = DataMod.genChange(self.method_return)
-   
     return change
 
 path = r'EURAUD.ifx_M1_202402190000_202402191016.csv'
@@ -85,8 +87,8 @@ region_size = (1/3)*np.ptp(data)
 num_forecasts = 10
 Forecast_iterations = 10
 
-instance = Main(data, initial_val)
-instance.bound_split(region_size, recursive_split = 0)
+instance = ForecastClass(data, initial_val)
+instance.region_split(region_size, recursive_split = True)
 
 Forecast = np.zeros((num_forecasts, Forecast_iterations))
 for index1 in np.arange(num_forecasts):
