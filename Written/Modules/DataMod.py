@@ -251,8 +251,8 @@ if __name__== '__main__':
   data_frame = pd.DataFrame(data)
   # result1, result2 = regionMap_pair(data, region_values = [0, 5, 10, 20], return_type = (1,2))
   # print(f'result1: {result1} and result2: {result2} \n')
-  moving_distr, count = data_frame.apply(regionMap_pair, axis = 0, dev_type = 2, region_values = 'map distr', return_type = (1,5)).to_numpy()
-  print(f'moving_distr: {moving_distr} and count: {count} \n')
+  result = data_frame.apply(regionMap_pair, axis = 0, dev_type = 2, region_values = 'map distr', return_type = (1,5))
+  print(f'result {result[:1]} \n')
   # mapped_data = regionMap_pair(data, region_values = 'map distr', return_type = (5,6,7))
   # print(f'mapped_data: {mapped_data} \n')
   
