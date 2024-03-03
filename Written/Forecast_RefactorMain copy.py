@@ -12,9 +12,9 @@ region_size = (1/3)*np.ptp(data)
 num_forecasts = 10
 Forecast_iterations = 10
 
-region_split = False
-bound_split = False
-recursive_split = True
+bound_split = 1
+region_split = 1
+recursive_split = 1
 
 def method_called (arg, method_used = DataMod.method_1, **kwargs):
   key_args = {
@@ -27,7 +27,7 @@ def method_called (arg, method_used = DataMod.method_1, **kwargs):
   key_args.update(kwargs)
   return method_used(arg, **key_args)
 
-def recursive_split (current_val, current_data, region_size, region_index):
+def recursiveSplit (current_val, current_data, region_size, region_index ):
   if bound_split:
     if current_val < data.min() or current_val > data.max():      
       current_val = data.max() if current_val > data.max() else data.min() 
@@ -65,8 +65,10 @@ for index1 in np.arange(num_forecasts):
   current_val = initial_val
   current_data = data
   for index2 in np.arange(1, Forecast_iterations):
-    if (region_split or bound_split) and recursive_split:
-        method_result = recursive_split(current_val, current_data, region_size, region_index)
+    if (bound_split or region_split) and recursive_split:
+        print(f'recusion baby')
+        if not region_split: region_index = None
+        method_result = recursiveSplit(current_val, current_data, region_size, region_index)
     current_val += DataMod.genChange(method_result)
     Forecast[index1, index2] = current_val
 
