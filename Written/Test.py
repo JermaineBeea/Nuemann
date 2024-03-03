@@ -8,12 +8,13 @@ path = r'EURAUD.ifx_M1_202402190000_202402191016.csv'
 data = pd.read_csv(path, sep = '\t')['<CLOSE>'].dropna()
 initial_val = data.iloc[-1] if isinstance(data, pd.Series) else data[-1]
 region_size = (1/3)*np.ptp(data)
-num_forecasts = 100
-Forecast_iterations = 100
+num_forecasts = 10
+Forecast_iterations = 10
 
 instance = fi.ForecastFunc(data, initial_val)
 instance.MethodCalled(DataMod.regionChange, tend_evaluation = False)
-instance.BoundSplit(region_size, recursive_split = 0)
+instance.UniformSplit(region_size, recursive_split = True)
+instance.BoundSplit(region_size, recursive_split = False)
 
 Forecast = np.zeros((num_forecasts, Forecast_iterations))
 for index1 in np.arange(num_forecasts):

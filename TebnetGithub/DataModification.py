@@ -3,7 +3,7 @@ import cProfile
 import pandas as pd
 import random
 
-def DistrFunc(data, **kwargs):
+def DistrFunc (data, **kwargs):
   
   dev_type = kwargs.get('dev_type', 1)
   tend_evaluation = kwargs.get('tend_evaluation', True)
@@ -37,7 +37,7 @@ def DistrFunc(data, **kwargs):
   else: 
     return [return_libr[key] for key in [return_type]][0]
 
-def blitzDistr(data, **kwargs):
+def blitzDistr (data, **kwargs):
   dev_type = kwargs.get('dev_type', 1)
   tend_evaluation = kwargs.get('tend_evaluation', True)
   return_type = kwargs.get('return_type', 'conc distr')
@@ -86,7 +86,7 @@ def blitzDistr(data, **kwargs):
   else: 
     return [return_libr[key] for key in [return_type]][0]
 
-def region_MapPair(original_data, region_values, **kwargs):
+def regionMap_pair (original_data, region_values, **kwargs):
 
   pair_data = kwargs.get('pair_data', False)
   pair_increment = kwargs.get('pair_increment', 1) if pair_data else 0
@@ -118,7 +118,7 @@ def region_MapPair(original_data, region_values, **kwargs):
   else:  
     return [return_list[digit - 1] for digit in [return_type]][0]
 
-def filterPair(data, **kwargs):
+def filterPair (data, **kwargs):
   order = kwargs.get('order', None)
   filter_flag = kwargs.get('filter_flag', False)
   pair_flag = kwargs.get('pair', False)
@@ -150,7 +150,7 @@ def filterPair(data, **kwargs):
 
   return print('No filter or pair operation performed') 
 
-def diffFunction(data, **kwargs):
+def diffFunction (data, **kwargs):
   n_order = kwargs.get('n_order', 1)
   axis = kwargs.get('axis', 1)
   return_type = kwargs.get('return_type', 0)
@@ -173,24 +173,24 @@ def diffFunction(data, **kwargs):
   else: 
     return [return_libr[key] for key in [return_type]][0]
 
-def boundData (data, value, region_size):
+def boundSplitFunc (data, value, region_size):
   if isinstance(data, list): data = np.array(data)
   upper_bound = value + (abs(data.max() - value)/np.ptp(data))*region_size
   lower_bound = value - (abs(data.min() - value)/np.ptp(data))*region_size
   current_data = data[(data >= lower_bound) & (data <= upper_bound)]
   return current_data
 
-def splitData (data, val, region_size):
+def uniformSplitFunc (data, val, region_size):
   if isinstance(data, list): data = np.array(data)
   steps = np.floor(np.ptp(data)/region_size) + 1
   region_values = np.linspace(data.min(), data.max(), int(steps))
-  split_data = region_MapPair(data, region_values, pair_data =  True)
+  split_data = regionMap_pair(data, region_values, pair_data =  True)
   region_index = np.digitize(val, region_values)
   if region_index == len(region_values): region_index -= 1
   if region_index == 0: region_index += 1
   return split_data, region_values
 
-def method_1 (data, **kwargs):
+def regionChange (data, **kwargs):
   dynamic_change = kwargs.get('dynamic_change', True)
   use_prob = kwargs.get('use_prob', True)
   set_prob = kwargs.get('set_prob', 0.5)
@@ -199,7 +199,7 @@ def method_1 (data, **kwargs):
 
   differences = diffFunction(data, return_type = 0)
   diff_distr = blitzDistr(differences, dev_type = dev_type, tend_evaluation = tend_evaluation,  return_type = 'conc distr')
-  region_mapped, probability = region_MapPair(differences , diff_distr, return_type = (1,2))
+  region_mapped, probability = regionMap_pair(differences , diff_distr, return_type = (1,2))
   lower_region = region_mapped[0]
   upper_region = region_mapped[-1]
   prob_upperRegion = probability[-1] if use_prob else set_prob
@@ -211,7 +211,7 @@ def method_1 (data, **kwargs):
   else:
     return tend_lowerRegion, tend_upperRegion, prob_upperRegion
 
-def method_2 (data, **kwargs):
+def posNegChange (data, **kwargs):
   dynamic_change = kwargs.get('dynamic_change', True)
   use_prob = kwargs.get('use_prob', True)
   set_prob = kwargs.get('set_prob', 0.5)
@@ -228,12 +228,13 @@ def method_2 (data, **kwargs):
   else:
     return tend_neg, tend_pos, prob_pos
 
-def genChange(method_data):
+def genChange (method_data):
   if method_data[0] is None: return method_data[1] if len(method_data[1]) == 1 else random.uniform(*method_data[1])
   if method_data[1] is None: return method_data[0] if len(method_data[0]) == 1 else random.uniform(*method_data[0])
   lower_change = method_data[0] if len(method_data[0]) == 1 else random.uniform(*method_data[0])
   upper_change = method_data[1] if len(method_data[1]) == 1 else random.uniform(*method_data[1])
   return upper_change if random.random() > method_data[2] else lower_change
 
+  
 
   

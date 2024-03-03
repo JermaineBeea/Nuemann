@@ -10,11 +10,12 @@ class ForecastFunc():
     self.flag = 1
     self.flag2 = 1
     self.run_flag = 1
-    # Method called flags
+    # Data and initial value
     self.data = data
     self.initial_val = initial_val
     self.BoundSplit_called = False
     self.UniformSplit_called = False
+    # Default method and arguments
     self.method_used = DataMod.regionChange
     self.method_args = {
     'tend_evaluation' : True,
@@ -28,13 +29,12 @@ class ForecastFunc():
     if method_used is not None:
         self.method_used = method_used  
     self.method_args.update(kwargs)
-    return self.method_used
+    print(f'Change Function used: {self.method_used.__name__}')
 
   def BoundSplit (self, region_size, recursive_split = True):
-    # Method called flags
-    print(f'bound split called')
-    # Method called flags
-    self.BoundSplit_called = True if not self.UniformSplit_called else False
+    self.BoundSplit_called = True ; print(f'Bound Split Method called')
+    if self.UniformSplit_called and self.BoundSplit_called:
+      self.UniformSplit_called = False; print(f'BOUND METHOD OVERWRITES UNIFORM METHOD')
     data = self.data
     initial_val = self.initial_val
     self.region_size = region_size
@@ -45,10 +45,9 @@ class ForecastFunc():
     self.method_return = self.method_used(self.current_data, **self.method_args)  
 
   def UniformSplit (self, region_size, recursive_split = True):
-    # Method called flags
-    print(f'uniform split called') 
-    # Method called flags
-    self.UniformSplit_called = True if not self.BoundSplit_called else False
+    self.UniformSplit_called = True ; print(f'Uniform Split Method called')
+    if self.BoundSplit_called and self.UniformSplit_called: 
+      self.BoundSplit_called = False; print(f'UNIFORM NETHOD OVERWRITES BOUND METHOD')
     data = self.data
     initial_val = self.initial_val
     self.region_size = region_size
@@ -65,8 +64,7 @@ class ForecastFunc():
   def GenerateChange (self, current_val):
     if self.BoundSplit_called and self.recursive_split:
       # Method called flags
-      if self.flag == 1: print(f'bound recursion split') ; self.flag+= 1; 
-      # Method called flags
+      if self.flag == 1: print(f'Bound Recursion Split') ; self.flag+= 1; 
       data = self.data
       current_data = self.current_data
       region_size = self.region_size
@@ -80,8 +78,7 @@ class ForecastFunc():
     
     elif self.UniformSplit_called and self.recursive_split:
       # Method called flags
-      if self.flag2 == 1: print(f'uniform recursion splt') ; self.flag2 += 1
-      # Method called flags
+      if self.flag2 == 1: print(f'Uniform Recursion Split') ; self.flag2 += 1
       region_values = self.region_values
       region_index = self.region_index
       current_regionIndex = np.digitize(current_val, region_values)
@@ -92,11 +89,10 @@ class ForecastFunc():
       self.method_return = self.net_process[self.region_index - 1]
     
     else:
-      if self.run_flag == 1:
-        if not self.BoundSplit_called and not self.UniformSplit_called:
+      if (not self.BoundSplit_called and not self.UniformSplit_called) and self.run_flag == 1:
           self.method_return = self.method_used(self.data, **self.method_args)
           print(f'No Split Method called')        
-        self.run_flag += 1
+      self.run_flag += 1
     change = DataMod.genChange(self.method_return)
     return change
 
@@ -109,8 +105,9 @@ if __name__ == '__main__':
   Forecast_iterations = 10
   
   instance = ForecastFunc(data, initial_val)
-  instance.MethodCalled(DataMod.regionChange, tend_evaluation = False)
-  instance.BoundSplit(region_size, recursive_split = 1)
+  instance.MethodCalled( DataMod.posNegChange, tend_evaluation = False)
+  instance.UniformSplit(region_size, recursive_split = 0)
+  instance.BoundSplit(region_size, recursive_split = 0)
   
   Forecast = np.zeros((num_forecasts, Forecast_iterations))
   for index1 in np.arange(num_forecasts):
