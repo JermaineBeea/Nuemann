@@ -232,6 +232,8 @@ def method_2 (data, **kwargs):
     return tend_neg, tend_pos, prob_pos
 
 def genChange(method_data):
+  if method_data[0] is None: return method_data[1] if len(method_data[1]) == 1 else random.uniform(*method_data[1])
+  if method_data[1] is None: return method_data[0] if len(method_data[0]) == 1 else random.uniform(*method_data[0])
   lower_change = method_data[0] if len(method_data[0]) == 1 else random.uniform(*method_data[0])
   upper_change = method_data[1] if len(method_data[1]) == 1 else random.uniform(*method_data[1])
   return upper_change if random.random() > method_data[2] else lower_change
