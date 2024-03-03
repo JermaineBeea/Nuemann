@@ -235,10 +235,5 @@ def genChange(method_data):
   upper_change = method_data[1] if len(method_data[1]) == 1 else random.uniform(*method_data[1])
   return upper_change if random.random() > method_data[2] else lower_change
 
-if __name__== '__main__':
-  path = r'EURAUD.ifx_M1_202402190000_202402191016.csv'
-  data = pd.read_csv(path, sep = '\t')['<CLOSE>'].dropna()
-
-  
 
   
