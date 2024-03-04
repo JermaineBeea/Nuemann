@@ -14,7 +14,6 @@ Forecast_iterations = data_size//3
 
 instance = fi.ForecastFunc(data, initial_val)
 instance.MethodCalled(tend_evaluation = False, dev_type = 2)
-# instance.BoundSplit(region_size, recursive_split = True)
 instance.UniformSplit(region_size, recursive_split = True)
 
 Forecast = np.zeros((num_forecasts, Forecast_iterations))
@@ -31,19 +30,19 @@ moving_distr = data_frame.apply(DataMod.blitzDistr, axis = 0, dev_type = 2, retu
 result = data_frame.apply(DataMod.regionMap_pair, axis = 0, dev_type = 2, region_values = 'map distr', distr_return = 'conc range', return_type = (5))
 movingDistr_count = result.to_numpy()[1:]
 moving_prob = movingDistr_count/data_frame.shape[0]
-net_movingDistr = np.sum(movingDistr_count)/(data_frame.size - data_frame.shape[0])
+density_movingDistr = np.sum(movingDistr_count)/(data_frame.size - data_frame.shape[0])
 max_movingDistr = moving_distr.max().max()
 min_movingDistr = moving_distr.min().min()
 
 from_ = data_size; to_ = from_ + Forecast_iterations
 x_range = np.arange(from_, to_)
-color_1 = 'red'
-plt.title(f'Moving distrbution probability is  {np.floor(net_movingDistr*100)}%')
+color_1 = 'red'; color_2 = 'black'
+plt.title(f'Moving distrbution density is  {np.floor(density_movingDistr*100)}%')
 plt.axhline(y = max_movingDistr, color = color_1, linestyle = '--', alpha = 0.5, label = f'Max Moving Distribution {max_movingDistr}')
 plt.axhline(y = min_movingDistr, color = color_1, linestyle = '--', alpha = 0.5, label = f'Min Moving Distribution {min_movingDistr}')
-plt.plot(data, color = 'orange', label = 'Data')
+
+plt.plot(data, color = color_2, label = 'Data', alpha = 0.8)
 plt.plot(x_range, Forecast.T, linestyle = '--',color = 'grey', linewidth = 0.4, alpha = 0.2)
 plt.plot(x_range, moving_distr.T, color = color_1, label = 'Moving Distribution')
-# plt.plot(moving_prob, color = 'blue')
 plt.legend()
 plt.show()
